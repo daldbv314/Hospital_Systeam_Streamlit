@@ -18,7 +18,6 @@ import datetime
 
 import pandas as pd
 import numpy as np
-import plotly.express as px
 import streamlit as st
 from streamlit.components.v1 import html
 from streamlit_option_menu import option_menu
