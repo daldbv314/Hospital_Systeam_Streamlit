@@ -79,7 +79,7 @@ class Patient(Person):
 
     def assign_doctor_to_pateint(slef, doctor_name, doctor_phone, patient_id, patient_name):
         if slef.check_doctor_db(doctor_name, doctor_phone) and slef.check_patient_db(patient_id, patient_name):
-
+            doctor_phone = f"'{doctor_phone}'"
             row_to_check = pd.Series({"Doctor": doctor_name,
                                       "Doctor_Phone": doctor_phone,
                                       "Patient": patient_name,
