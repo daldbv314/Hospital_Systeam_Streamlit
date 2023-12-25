@@ -158,9 +158,9 @@ with st.sidebar:
     st.title("Al-Salama Hospital")
     page = option_menu(
         menu_title='Menu',
-        options=['Home', 'Doctor', "Nurse", "Patient", "Operation"],
+        options=['Doctor', "Nurse", "Patient", "Operation"],
         menu_icon='chat-text-fill',
-        default_index=1,
+        default_index=0,
         styles={
             "container": {"padding": "10!important", "background-color": '#000'},
             "icon": {"color": "white", "font-size": "22px"},
@@ -346,72 +346,77 @@ with st.sidebar:
                 st.text(F"Adding Patients To Doctor's List".title())
                 st.info(
                     "Be sure that the Patient or Doctor Must Be in the hospital already!!")
-                with st.form('adding_existing_patient'):
-                    col_1, col_2 = st.columns(2)
-                    with col_1:
-                        doctor_name = st.selectbox(
-                            "Select Doctor Name:", options=(hospital.get_all_doctors()["Name"].tolist())).strip()
+                if len(hospital.get_all_doctors()) > 0 and len(hospital.get_all_patients()) > 0:
+                    with st.form('adding_existing_patient'):
+                        col_1, col_2 = st.columns(2)
+                        with col_1:
+                            doctor_name = st.selectbox(
+                                "Select Doctor Name:", options=(hospital.get_all_doctors()["Name"].tolist())).strip()
 
-                        st.write("***")
+                            st.write("***")
 
-                        patient_name = st.selectbox(
-                            "Select Patient Name:", options=(hospital.get_all_patients()["Name"].tolist())).strip()
+                            patient_name = st.selectbox(
+                                "Select Patient Name:", options=(hospital.get_all_patients()["Name"].tolist())).strip()
 
-                    with col_2:
-                        doctor_phone = st.text_input(
-                            label="Doctor Phone", placeholder="01020487XXX", max_chars=11).strip()
+                        with col_2:
+                            doctor_phone = st.text_input(
+                                label="Doctor Phone", placeholder="01020487XXX", max_chars=11).strip()
 
-                        st.write("***")
-                        patient_id = st.selectbox("Select Patient ID:", options=(
-                            hospital.get_all_patients()["Patient_ID"].tolist())).strip()
+                            st.write("***")
+                            patient_id = st.selectbox("Select Patient ID:", options=(
+                                hospital.get_all_patients()["Patient_ID"].tolist())).strip()
 
-                    add_patient_to_doctor = st.form_submit_button(
-                        label='Add Patient To The Doctor')
+                        add_patient_to_doctor = st.form_submit_button(
+                            label='Add Patient To The Doctor')
 
-                    if add_patient_to_doctor:
-                        # Get The Output of Validation
-                        flag_doctor_name = is_valid_full_name(doctor_name)
-                        flag_doctor_phone = is_valid_phone(doctor_phone)
+                        if add_patient_to_doctor:
+                            # Get The Output of Validation
+                            flag_doctor_name = is_valid_full_name(doctor_name)
+                            flag_doctor_phone = is_valid_phone(doctor_phone)
 
-                        flag_patient_name = is_valid_full_name(patient_name)
+                            flag_patient_name = is_valid_full_name(
+                                patient_name)
 
-                        if flag_doctor_name == False:
-                            st.warning(
-                                'Please Enter Right Doctor Name')
+                            if flag_doctor_name == False:
+                                st.warning(
+                                    'Please Enter Right Doctor Name')
 
-                        if flag_doctor_phone == False:
-                            st.warning(
-                                'Please Enter a Valid Phone Number!!')
+                            if flag_doctor_phone == False:
+                                st.warning(
+                                    'Please Enter a Valid Phone Number!!')
 
-                        if flag_patient_name == False:
-                            st.warning(
-                                'Please Enter Right Patient Name')
+                            if flag_patient_name == False:
+                                st.warning(
+                                    'Please Enter Right Patient Name')
 
-                        if flag_doctor_name and flag_doctor_phone and flag_patient_name:
-                            # Create Empty Instance of Doctor Class
-                            temp_doctor = Doctor.empty_Doctor_constructor()
+                            if flag_doctor_name and flag_doctor_phone and flag_patient_name:
+                                # Create Empty Instance of Doctor Class
+                                temp_doctor = Doctor.empty_Doctor_constructor()
 
-                            with st.spinner(text='Adding Nurse To The Team…'):
-                                sleep(1)
-                                adding_patient = temp_doctor.add_patient_to_doctor(
-                                    doctor_name, doctor_phone, patient_id, patient_name)
-                                if adding_patient == False:
-                                    st.error(
-                                        f"Can Not Add This Patient to {doctor_name}\'s List :x:.\nPlease, Check All Input Fields")
-                                    st.warning(
-                                        f"Ensure That!! Doctor Phone Number belongs to Doctor {doctor_name}\n\
-                                            And The Patient ID belongs to {patient_name}")
-                                elif adding_patient == -1:
-                                    st.warning(
-                                        f"Patient ({patient_name}) Already Existed In {doctor_name}'s List.")
-                                else:
-                                    st.success(
-                                        f"Patient ({patient_name}) Added To {doctor_name}'s List.")
+                                with st.spinner(text='Adding Nurse To The Team…'):
+                                    sleep(1)
+                                    adding_patient = temp_doctor.add_patient_to_doctor(
+                                        doctor_name, doctor_phone, patient_id, patient_name)
+                                    if adding_patient == False:
+                                        st.error(
+                                            f"Can Not Add This Patient to {doctor_name}\'s List :x:.\nPlease, Check All Input Fields")
+                                        st.warning(
+                                            f"Ensure That!! Doctor Phone Number belongs to Doctor {doctor_name}\n\
+                                                And The Patient ID belongs to {patient_name}")
+                                    elif adding_patient == -1:
+                                        st.warning(
+                                            f"Patient ({patient_name}) Already Existed In {doctor_name}'s List.")
+                                    else:
+                                        st.success(
+                                            f"Patient ({patient_name}) Added To {doctor_name}'s List.")
 
-                        else:
-                            st.error(
-                                'The Operation Corrupted :x:.\nPlease, Check All Input Fields')
+                            else:
+                                st.error(
+                                    'The Operation Corrupted :x:.\nPlease, Check All Input Fields')
 
+                else:
+                    st.warning(
+                        "Please You Have To Add Doctors & Patients First To Hospital!!!")
             if doctor_option == "Doctors Info":
                 st.text(
                     f'All Doctors in "{hospital.name} Hospital" 🏥'.title())
@@ -615,58 +620,62 @@ with st.sidebar:
                                     'Patient(s) Saved Successfully :white_check_mark:')
 
             if patient_option == "Assigning to Doctor":
-                st.text(F'Assigning To Doctor'.title())
+                if len(hospital.get_all_doctors()) > 0 and len(hospital.get_all_patients()) > 0:
+                    st.text(F'Assigning To Doctor'.title())
 
-                with st.form('assign_patient_to_dr'):
-                    patient_id = st.selectbox("Select Patient ID:", options=(
-                        hospital.get_all_patients()["Patient_ID"].tolist())).strip()
-                    st.write("***")
-                    c1, c2 = st.columns(2)
-                    with c1:
+                    with st.form('assign_patient_to_dr'):
+                        patient_id = st.selectbox("Select Patient ID:", options=(
+                            hospital.get_all_patients()["Patient_ID"].tolist())).strip()
+                        st.write("***")
+                        c1, c2 = st.columns(2)
+                        with c1:
 
-                        doctor_name = st.selectbox(
-                            "Select Doctor Name:", options=(hospital.get_all_doctors()["Name"].tolist())).strip()
+                            doctor_name = st.selectbox(
+                                "Select Doctor Name:", options=(hospital.get_all_doctors()["Name"].tolist())).strip()
 
-                    with c2:
-                        doctor_phone = st.text_input(
-                            label="Doctor Phone", placeholder="01020487XXX", max_chars=11).strip()
+                        with c2:
+                            doctor_phone = st.text_input(
+                                label="Doctor Phone", placeholder="01020487XXX", max_chars=11).strip()
 
-                    assign_doctor = st.form_submit_button(
-                        label='Assign Patient to Doctor')
+                        assign_doctor = st.form_submit_button(
+                            label='Assign Patient to Doctor')
 
-                    if assign_doctor:
-                        flag_doctor_name = is_valid_full_name(doctor_name)
+                        if assign_doctor:
+                            flag_doctor_name = is_valid_full_name(doctor_name)
 
-                        if flag_doctor_name == False:
-                            st.warning(
-                                'Choose Doctor From List !..')
+                            if flag_doctor_name == False:
+                                st.warning(
+                                    'Choose Doctor From List !..')
 
-                        if flag_doctor_name:
-                            with st.spinner(text='Deleting The Book…'):
-                                # Get Patient Name
-                                patient_df = hospital.get_all_patients()
-                                filt = (patient_df["Patient_ID"] == patient_id)
-                                patient_name = patient_df.loc[filt]["Name"].values[0]
+                            if flag_doctor_name:
+                                with st.spinner(text='Deleting The Book…'):
+                                    # Get Patient Name
+                                    patient_df = hospital.get_all_patients()
+                                    filt = (
+                                        patient_df["Patient_ID"] == patient_id)
+                                    patient_name = patient_df.loc[filt]["Name"].values[0]
 
-                                temp_patient = Patient.empty_patient_constructor()
+                                    temp_patient = Patient.empty_patient_constructor()
 
-                                assigning_doctor = temp_patient.assign_doctor_to_pateint(
-                                    doctor_name, doctor_phone, patient_id, patient_name)
+                                    assigning_doctor = temp_patient.assign_doctor_to_pateint(
+                                        doctor_name, doctor_phone, patient_id, patient_name)
 
-                                sleep(1)
-                                if assigning_doctor == False:
-                                    st.error(
-                                        f"Can Not Assigning Doctor ({doctor_name}) to Patirnt ({patient_id}):x:.\nPlease, Check All Input Fields")
-                                    st.warning(
-                                        f"Ensure That!! Doctor Phone Number belongs to Doctor {doctor_name}\n\
-                                                And The Patient ID {patient_id}")
-                                elif assigning_doctor == -1:
-                                    st.warning(
-                                        f"Patient ({patient_id}) Already Existed In {doctor_name}'s List.")
-                                else:
-                                    st.success(
-                                        f"Patient ({patient_id}) Added To {doctor_name}'s List.")
-
+                                    sleep(1)
+                                    if assigning_doctor == False:
+                                        st.error(
+                                            f"Can Not Assigning Doctor ({doctor_name}) to Patirnt ({patient_id}):x:.\nPlease, Check All Input Fields")
+                                        st.warning(
+                                            f"Ensure That!! Doctor Phone Number belongs to Doctor {doctor_name}\n\
+                                                    And The Patient ID {patient_id}")
+                                    elif assigning_doctor == -1:
+                                        st.warning(
+                                            f"Patient ({patient_id}) Already Existed In {doctor_name}'s List.")
+                                    else:
+                                        st.success(
+                                            f"Patient ({patient_id}) Added To {doctor_name}'s List.")
+                else:
+                    st.warning(
+                        "Please Add Doctors & Patients First To Hospital!!\nIn Order To Assigning Doctors")
             if patient_option == "Patients Info":
                 st.text(
                     f'All Patients in "{hospital.name} Hospital" 🏥'.title())
@@ -690,77 +699,84 @@ with st.sidebar:
         with content:
             temp_operation = Operation.empty_operation_constructor()
             if operation_option == "Add Operation":
-                with st.form('operation_form'):
-                    operation_name = st.text_input(
-                        label="Operation Name 💉", placeholder="Debridement of wound").strip()
+                if len(hospital.get_all_doctors()) > 0 \
+                        and len(hospital.get_all_nurses()) > 0 \
+                        and len(hospital.get_all_patients()) > 0:
 
-                    st.write("***")
-
-                    [c1, c2] = st.columns(2)
-                    with c1:
-                        operation_time = st.time_input(
-                            'Operation Time 🕗', datetime.time(3, 30))
+                    with st.form('operation_form'):
+                        operation_name = st.text_input(
+                            label="Operation Name 💉", placeholder="Debridement of wound").strip()
 
                         st.write("***")
-                        surgeon_name = st.selectbox(
-                            label="Surgeon Name 👨‍⚕️", options=hospital.get_all_doctors()["Name"].tolist()).strip()
 
-                    with c2:
+                        [c1, c2] = st.columns(2)
+                        with c1:
+                            operation_time = st.time_input(
+                                'Operation Time 🕗', datetime.time(3, 30))
 
-                        operation_date = st.date_input(
-                            "Operation Date 📅", datetime.date(2024, 1, 3))
+                            st.write("***")
+                            surgeon_name = st.selectbox(
+                                label="Surgeon Name 👨‍⚕️", options=hospital.get_all_doctors()["Name"].tolist()).strip()
 
-                        st.write("***")
-                        nurse_name = st.selectbox(
-                            label="Nurse Name 👩‍⚕️", options=hospital.get_all_nurses()["Name"].tolist()).strip()
+                        with c2:
 
-                    st.write("\n\n")
+                            operation_date = st.date_input(
+                                "Operation Date 📅", datetime.date(2024, 1, 3))
 
-                    add_nurse_to_operatin = st.form_submit_button(
-                        label='Add Nurse to Operation')
+                            st.write("***")
+                            nurse_name = st.selectbox(
+                                label="Nurse Name 👩‍⚕️", options=hospital.get_all_nurses()["Name"].tolist()).strip()
 
-                    add_operation = st.form_submit_button(
-                        label='Add Operation')
+                        st.write("\n\n")
 
-                    if add_nurse_to_operatin:
-                        if temp_operation.add_nurse(nurse_name) == 0:
-                            st.warning(
-                                f'Nurse {nurse_name} Already In This Operation!!')
-                        else:
-                            st.info(
-                                f"Nurse {nurse_name} Added Successfully To This Operation..")
+                        add_nurse_to_operatin = st.form_submit_button(
+                            label='Add Nurse to Operation')
 
-                    if add_operation:
+                        add_operation = st.form_submit_button(
+                            label='Add Operation')
 
-                        flag_operation_name = is_valid_operation_name(
-                            operation_name)
+                        if add_nurse_to_operatin:
+                            if temp_operation.add_nurse(nurse_name) == 0:
+                                st.warning(
+                                    f'Nurse {nurse_name} Already In This Operation!!')
+                            else:
+                                st.info(
+                                    f"Nurse {nurse_name} Added Successfully To This Operation..")
 
-                        if flag_operation_name == False:
+                        if add_operation:
 
-                            st.warning(
-                                'The Operation Name')
+                            flag_operation_name = is_valid_operation_name(
+                                operation_name)
 
-                        if flag_operation_name:
-                            with st.spinner(text='Saving The Operation To Database…'):
-                                temp_operation.set_operation_id(
-                                    operation_name, surgeon_name)
-                                temp_operation.set_operation_name(
-                                    operation_name)
-                                temp_operation.set_operation_date(
-                                    operation_date)
-                                temp_operation.set_operation_time(
-                                    operation_time)
-                                temp_operation.set_operation_surgeon(
-                                    surgeon_name)
-                                sleep(1.5)
-                                temp_operation.create_operation()
-                                st.success(
-                                    'Surgery Operation Saved Successfully...')
+                            if flag_operation_name == False:
 
-                        else:
-                            st.error(
-                                'Please Ensure You Write All Fields in Correct Way!!.')
+                                st.warning(
+                                    'The Operation Name')
 
+                            if flag_operation_name:
+                                with st.spinner(text='Saving The Operation To Database…'):
+                                    temp_operation.set_operation_id(
+                                        operation_name, surgeon_name)
+                                    temp_operation.set_operation_name(
+                                        operation_name)
+                                    temp_operation.set_operation_date(
+                                        operation_date)
+                                    temp_operation.set_operation_time(
+                                        operation_time)
+                                    temp_operation.set_operation_surgeon(
+                                        surgeon_name)
+                                    sleep(1.5)
+                                    temp_operation.create_operation()
+                                    st.success(
+                                        'Surgery Operation Saved Successfully...')
+
+                            else:
+                                st.error(
+                                    'Please Ensure You Write All Fields in Correct Way!!.')
+
+                else:
+                    st.warning(
+                        "To Add Operation!! Of Course You have To Add Doctors and Patients and Nurses To The Hospital!!")
             elif operation_option == "All Operations":
                 st.text(
                     f'All Patients in "{hospital.name} Hospital" 🏥'.title())
